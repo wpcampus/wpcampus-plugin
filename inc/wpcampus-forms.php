@@ -41,6 +41,9 @@ class WPCampus_Forms {
 		add_filter( 'gform_pre_submission_filter_14', array( $this, 'populate_user_registration_subjects' ) );
 		add_filter( 'gform_admin_pre_render_14', array( $this, 'populate_user_registration_subjects' ) );
 
+		// Custom process the user registration form
+		add_action( 'gform_user_registered', array( $this, 'after_user_registration_submission' ), 10, 3 );
+
 	}
 
 	/**
@@ -79,7 +82,7 @@ class WPCampus_Forms {
 				continue;
 			}
 
-			// Get the subjects
+			// Get the subjects terms
 			$subjects = get_terms( array(
 				'taxonomy'      => 'subjects',
 				'hide_empty'    => false,
@@ -91,22 +94,92 @@ class WPCampus_Forms {
 
 				// Add the subjects as choices
 				$choices = array();
+				$inputs = array();
 
+				$subject_index = 1;
 				foreach ( $subjects as $subject ) {
+
+					// Add the choice
 					$choices[] = array(
 						'text'  => $subject->name,
 						'value' => $subject->term_id,
 					);
+
+					// Add the input
+					$inputs[] = array(
+						'id' => $field->id . '.' . $subject_index,
+						'label' => $subject->name,
+					);
+
+					$subject_index++;
+
 				}
 
-				// Assign the new choices
+				// Assign the new choices and inputs
 				$field->choices = $choices;
+				$field->inputs = $inputs;
 
 			}
 
 		}
 
 		return $form;
+	}
+
+	/**
+	 * Custom process the user registration form.
+	 */
+	public function after_user_registration_submission( $user_id, $feed, $entry ) {
+
+		// If entry is the ID, get the entry
+		if ( is_numeric( $entry ) && $entry > 0 ) {
+			$entry = GFAPI::get_entry( $entry );
+		}
+
+		// Get the form
+		$form = false;
+		if ( isset( $feed['form_id'] ) && $feed['form_id'] > 0 ) {
+			$form = GFAPI::get_form( $feed['form_id'] );
+		}
+
+		// Make sure we have some info
+		if ( ! $entry || ! $form ) {
+			return false;
+		}
+
+		// Process one field at a time
+		foreach( $form[ 'fields']  as $field ) {
+
+			// Process fields according to admin label
+			switch( $field[ 'adminLabel' ] ) {
+
+				case 'subjectexpert':
+
+					// Get all the user defined subjects and place in array
+					$user_subjects = array();
+					foreach( $field->inputs as $input ) {
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							$user_subjects[] = $this_data;
+						}
+					}
+
+					// Make sure we have a subjects
+					if ( ! empty( $user_subjects ) ) {
+
+						// Make sure its all integers
+						$user_subjects = array_map( 'intval', $user_subjects );
+
+						// Set the terms for the user
+						wp_set_object_terms( $user_id, $user_subjects, 'subjects', false );
+
+					}
+
+					break;
+
+			}
+
+		}
+
 	}
 
 	/**

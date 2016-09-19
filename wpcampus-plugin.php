@@ -293,7 +293,7 @@ class WPCampus_Plugin {
 		));
 
 		// Add subjects taxonomy
-		register_taxonomy( 'subjects', array( 'post' ), array(
+		register_taxonomy( 'subjects', array( 'post', 'user' ), array(
 			'label'					    => __( 'Subjects', 'wpcampus' ),
 			'labels'                    => array(
 				'name'                      => _x( 'Subjects', 'Taxonomy General Name', 'wpcampus' ),
