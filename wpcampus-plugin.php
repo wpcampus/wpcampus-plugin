@@ -19,7 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
 }
 
 // Load the files
-//require_once plugin_dir_path( __FILE__ ) . 'includes/hooks.php';
+require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-forms.php';
 
 // We only need you in the admin
 //if ( is_admin() ) {
