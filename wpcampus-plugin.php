@@ -22,9 +22,9 @@ if ( ! defined( 'WPINC' ) ) {
 require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-forms.php';
 
 // We only need you in the admin
-//if ( is_admin() ) {
-	//require_once plugin_dir_path( __FILE__ ) . 'includes/admin.php';
-//}
+if ( is_admin() ) {
+	require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-admin.php';
+}
 
 class WPCampus_Plugin {
 
