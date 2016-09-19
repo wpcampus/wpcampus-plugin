@@ -1,6 +1,6 @@
-# WPCampus - New WP Plugin
+# WPCampus - WP Plugin
 
-This repo is a work in progress and will hold theme-independent functionality for the new theme for the main WPCampus website at [https://wpcampus.org](https://wpcampus.org).
+This WordPress plugin holds theme-independent functionality for the main WPCampus website at [https://wpcampus.org](https://wpcampus.org).
 
 ## Disclaimer
 
