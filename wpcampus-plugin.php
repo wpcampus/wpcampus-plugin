@@ -64,6 +64,12 @@ class WPCampus_Plugin {
 		// Runs when the plugin is upgraded
 		add_action( 'upgrader_process_complete', array( $this, 'upgrader_process_complete' ), 1, 2 );
 
+		// Change the login logo URL
+		add_filter( 'login_headerurl', array( $this, 'change_login_header_url' ) );
+
+		// Hide Query Monitor if admin bar isn't showing
+		add_filter( 'qm/process', array( $this, 'hide_query_monitor' ), 10, 2 );
+
 		// Register our CPTs and taxonomies
 		add_action( 'init', array( $this, 'register_cpts_taxonomies' ) );
 
@@ -105,6 +111,80 @@ class WPCampus_Plugin {
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'wpcampus', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
+	}
+
+	/**
+	 * Change the login logo URL to point
+	 * to the site's home page.
+	 */
+	public function change_login_header_url( $login_header_url ) {
+		return get_bloginfo( 'url' );
+	}
+
+	/**
+	 * Hide Query Monitor if admin bar isn't showing.
+	 */
+	public function hide_query_monitor( $show_qm, $is_admin_bar_showing ) {
+		return $is_admin_bar_showing;
+	}
+
+	/**
+	 * Takes the address and returns
+	 * location lat and long from Google.
+	 */
+	function get_lat_long( $address ) {
+
+		// Get Geocode data
+		$geocode = $this->get_geocode( $address );
+		if ( ! empty( $geocode ) ) {
+
+			// Get the geometry
+			if ( $geometry = isset( $geocode->geometry ) ? $geocode->geometry : false ) {
+
+				// Get the location
+				if ( $location = isset( $geometry->location ) ? $geometry->location : false ) {
+					return $location;
+				}
+
+			}
+
+		}
+
+		return false;
+
+	}
+
+	/**
+	 * Takes the address and returns geocode data from Google.
+	 */
+	function get_geocode( $address ) {
+
+		// Make sure we have an address
+		if ( ! trim( $address ) ) {
+			return false;
+		}
+
+		// Build maps query - needs Google API Server Key
+		$maps_api_key = get_option( 'wpcampus_google_maps_api_key' );
+		$query = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $address ) . "&key=" . $maps_api_key;
+
+		// If data is returned...
+		if ( ( $response = wp_remote_get( $query ) )
+		     && ( $data = wp_remote_retrieve_body( $response ) ) ) {
+
+			// Decode the data
+			$data = json_decode( $data );
+
+			// Get the first result
+			if ( $result = isset( $data->results ) && is_array($data->results ) ? array_shift( $data->results ) : false ) {
+
+				return $result;
+
+			}
+
+		}
+
+		return false;
 	}
 
 	/**

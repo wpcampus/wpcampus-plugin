@@ -257,7 +257,8 @@ class WPCampus_Forms {
 					$traveling_string = preg_replace( '/[\s]{2,}/i', ' ', implode( ' ', ${$admin_label} ) );
 
 					// Get latitude and longitude
-					if ( $traveling_lat_long = wpcampus_get_lat_long( $traveling_string ) ) {
+					$traveling_lat_long = wpcampus_plugin()->get_lat_long( $traveling_string );
+					if ( ! empty( $traveling_lat_long ) ) {
 
 						// Store data (will be stored in post meta later)
 						$traveling_latitude = isset( $traveling_lat_long->lat ) ? $traveling_lat_long->lat : false;
