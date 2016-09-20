@@ -35,6 +35,9 @@ class WPCampus_Admin {
 		// Add any general meta boxes
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 1, 2 );
 
+		// Filter the users query to filter users
+		add_filter( 'pre_user_query', array( $this, 'filter_users_query' ) );
+
 		// Adds user custom columns
 		add_filter( 'manage_users_columns', array( $this, 'add_user_columns' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'populate_user_columns' ), 10, 3 );
@@ -70,6 +73,45 @@ class WPCampus_Admin {
 	 * @return	void
 	 */
 	private function __wakeup() {}
+
+	/**
+	 * Filter the users query to filter the users table.
+	 *
+	 * @param   array - $args - Arguments passed to WP_User_Query
+	 *      to retrieve items for the current users list table.
+	 * @return  the filtered query args
+	 */
+	public function filter_users_query( &$query ) {
+		global $wpdb;
+
+		// Do we have a subject to filter?
+		$subjects = isset( $_GET['subjects'] ) ? $_GET['subjects'] : '';
+		if ( ! $subjects ) {
+			return;
+		}
+
+		// Convert to array
+		$subjects = explode( ',', str_replace( ' ', '', $subjects ) );
+		if ( empty( $subjects ) ) {
+			return;
+		}
+
+		// Make sure the subjects are valid terms
+		$the_subject_ids = array();
+		foreach( $subjects as $subject ) {
+			$the_subject = get_term_by( 'slug', $subject, 'subjects' );
+			if ( ! empty( $the_subject->term_id ) ) {
+				$the_subject_ids[] = $the_subject->term_id;
+			}
+		}
+
+		// Add to the "from" query
+		if ( ! empty( $the_subject_ids ) ) {
+			$query->query_from .= " INNER JOIN {$wpdb->term_relationships} rel ON rel.object_id = wp_users.ID
+				INNER JOIN {$wpdb->term_taxonomy} tax ON tax.term_taxonomy_id = rel.term_taxonomy_id AND tax.taxonomy = 'subjects' AND tax.term_id IN ( " . implode( ',', $the_subject_ids ) . " )";
+		}
+
+	}
 
 	/**
 	 * Adds our admin meta boxes.
