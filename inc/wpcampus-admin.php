@@ -119,6 +119,9 @@ class WPCampus_Admin {
 	 */
 	public function print_user_meta( $profile_user ) {
 
+		// Get Slack username in case we need to remind them to add it
+		$slack_username = get_user_meta( $profile_user->ID, 'slack_username', true );
+
 		// Get "add subjects" values
 		$wpc_add_subjects = get_user_meta( $profile_user->ID, 'wpc_add_subjects', true );
 
@@ -128,7 +131,14 @@ class WPCampus_Admin {
 		?>
 		<div style="background:#e3e4e5;padding:20px;">
 			<h2><?php printf( __( 'For %s', 'wpcampus' ), 'WPCampus' ); ?></h2>
-			<p style="font-size:1rem;color:#800;margin-bottom:0;"><strong>Be sure to provide your Slack username in the "Contact Info" section.</strong></p>
+			<?php
+
+			// Remind them to add their Slack username
+			if ( ! $slack_username ) { ?>
+				<p style="font-size:1rem;color:darkblue;margin-bottom:0;"><strong>Be sure to provide your Slack username in the "Contact Info" section.</strong></p>
+			<?php }
+
+			?>
 			<table class="form-table">
 				<tbody>
 					<?php
