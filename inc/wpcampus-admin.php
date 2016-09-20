@@ -32,8 +32,12 @@ class WPCampus_Admin {
 	 */
 	protected function __construct() {
 
-		// Add our meta boxes
+		// Add any general meta boxes
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 1, 2 );
+
+		// Adds user custom columns
+		add_filter( 'manage_users_columns', array( $this, 'add_user_columns' ) );
+		add_filter( 'manage_users_custom_column', array( $this, 'populate_user_columns' ), 10, 3 );
 
 		// Adds custom user contact methods
 		add_filter( 'user_contactmethods', array( $this, 'add_user_contact_methods' ), 1, 2 );
@@ -95,6 +99,58 @@ class WPCampus_Admin {
 				break;
 
 		}
+	}
+
+	/**
+	 * Add custom user columns.
+	 */
+	public function add_user_columns( $columns ) {
+
+		$new_columns = array();
+		foreach( $columns as $col_key => $col_value ) {
+
+			// Add subjects before posts
+			if ( 'posts' == $col_key ) {
+				$new_columns['subjects'] = __( 'Subjects', 'wpcampus' );
+			}
+
+			// Add to new columns
+			$new_columns[ $col_key ] = $col_value;
+
+		}
+
+		// Make sure subjects was added
+		if ( ! array_key_exists( 'subjects', $new_columns ) ) {
+			$new_columns['subjects'] = __( 'Subjects', 'wpcampus' );
+		}
+
+		return $new_columns;
+	}
+
+	/**
+	 * Populate the custom user columns.
+	 */
+	public function populate_user_columns( $value, $column_name, $user_id ) {
+		switch ( $column_name ) {
+
+			case 'subjects' :
+
+				// Get the user's subjects
+				$user_subjects = wp_get_object_terms( $user_id, 'subjects', array( 'fields' => 'all' ) );
+
+				// Build array of subjects
+				$user_subjects_list = array();
+				foreach( $user_subjects as $subject ) {
+					$user_subjects_list[] = '<a href="' . add_query_arg( 'subjects', $subject->slug, admin_url( 'users.php' ) ) . '">' . $subject->name . '</a>';
+				}
+
+				// Return comma separated list
+				return ! empty( $user_subjects_list ) ? implode( ', ', $user_subjects_list ) : '';
+				break;
+
+		}
+
+		return $value;
 	}
 
 	/**
