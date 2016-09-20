@@ -32,6 +32,9 @@ class WPCampus_Admin {
 	 */
 	protected function __construct() {
 
+		// Add admin pages
+		add_action( 'admin_menu', array( $this, 'add_pages' ) );
+
 		// Add any general meta boxes
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 1, 2 );
 
@@ -75,6 +78,53 @@ class WPCampus_Admin {
 	private function __wakeup() {}
 
 	/**
+	 * Add administration pages.
+	 */
+	public function add_pages() {
+
+		// Add "Find SME" users page
+		add_users_page( __( 'Find A Subject-Matter Expert', 'wpcampus' ), __( 'Find SME', 'wpcampus' ), 'read', 'find-sme', array( $this, 'print_users_find_sme_page' ) );
+
+	}
+
+	/**
+	 * Print the users "Find SME" page.
+	 */
+	public function print_users_find_sme_page() {
+		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'partials/users-find-sme.php';
+	}
+
+	/**
+	 * Adds our admin meta boxes.
+	 */
+	public function add_meta_boxes( $post_type, $post ) {
+
+		// Add a meta box to link to the podcast guide
+		add_meta_box(
+			'wpcampus-podcast-guide',
+			sprintf( __( '%s Podcast Guide', 'wpcampus' ), 'WPCampus' ),
+			array( $this, 'print_meta_boxes' ),
+			'podcast',
+			'side',
+			'high'
+		);
+
+	}
+
+	/**
+	 * Print our meta boxes.
+	 */
+	public function print_meta_boxes( $post, $metabox ) {
+		switch( $metabox[ 'id' ] ) {
+
+			case 'wpcampus-podcast-guide':
+				?><div style="background:rgba(0,115,170,0.07);padding:18px;color:#000;margin:-6px -12px -12px -12px;">Be sure to read our <a href="https://docs.google.com/document/d/1GG8-qb4OQ3TzDyB1UI00GvRw-agyIO1AT8WUPuyDgHg/edit#heading=h.8dr748uym2qn" target="_blank">WPCampus Podcast Guide</a> to help walk you through the process and ensure proper setup.</div><?php
+				break;
+
+		}
+	}
+
+	/**
 	 * Filter the users query to filter the users table.
 	 *
 	 * @param   array - $args - Arguments passed to WP_User_Query
@@ -111,36 +161,6 @@ class WPCampus_Admin {
 				INNER JOIN {$wpdb->term_taxonomy} tax ON tax.term_taxonomy_id = rel.term_taxonomy_id AND tax.taxonomy = 'subjects' AND tax.term_id IN ( " . implode( ',', $the_subject_ids ) . " )";
 		}
 
-	}
-
-	/**
-	 * Adds our admin meta boxes.
-	 */
-	public function add_meta_boxes( $post_type, $post ) {
-
-		// Add a meta box to link to the podcast guide
-		add_meta_box(
-			'wpcampus-podcast-guide',
-			sprintf( __( '%s Podcast Guide', 'wpcampus' ), 'WPCampus' ),
-			array( $this, 'print_meta_boxes' ),
-			'podcast',
-			'side',
-			'high'
-		);
-
-	}
-
-	/**
-	 * Print our meta boxes.
-	 */
-	public function print_meta_boxes( $post, $metabox ) {
-		switch( $metabox[ 'id' ] ) {
-
-			case 'wpcampus-podcast-guide':
-				?><div style="background:rgba(0,115,170,0.07);padding:18px;color:#000;margin:-6px -12px -12px -12px;">Be sure to read our <a href="https://docs.google.com/document/d/1GG8-qb4OQ3TzDyB1UI00GvRw-agyIO1AT8WUPuyDgHg/edit#heading=h.8dr748uym2qn" target="_blank">WPCampus Podcast Guide</a> to help walk you through the process and ensure proper setup.</div><?php
-				break;
-
-		}
 	}
 
 	/**
