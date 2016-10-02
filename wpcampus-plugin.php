@@ -73,6 +73,9 @@ class WPCampus_Plugin {
 		// Register our CPTs and taxonomies
 		add_action( 'init', array( $this, 'register_cpts_taxonomies' ) );
 
+		// Modify custom post type arguments from other plugins
+		add_filter( 'register_post_type_args', array( $this, 'modify_post_type_args' ), 10, 2 );
+
 		// Add our "show if URL parameter is defined" shortcode
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
 
@@ -328,6 +331,24 @@ class WPCampus_Plugin {
 			'show_tagcloud'             => false,
 		) );
 
+	}
+
+	/**
+	 * Filter the arguments for registering a post type
+	 * so we can modify settings from other plugins.
+	 *
+	 * @param   array - $args - array of arguments for registering a post type
+	 * @param   string - $post_type - post type key
+	 * @return  array - the filtered arguments
+	 */
+	public function modify_post_type_args( $args, $post_type ) {
+
+		// Customize the capability type so we can customize who can see them in the admin
+		if ( in_array( $post_type, array( 'google_maps', 'podcast' ) ) ) {
+			$args['capability_type'] = array( 'google_map', 'google_maps' );
+		}
+
+		return $args;
 	}
 
 	/**
