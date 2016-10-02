@@ -35,11 +35,11 @@ class WPCampus_Forms {
 		// Convert get involved form entries to CPT upon submission
 		add_action( 'gform_after_submission_1', array( $this, 'get_involved_sub_convert_to_post' ), 10, 2 );
 
-		// Populate the user registration SMEs with subjects taxonomy
-		add_filter( 'gform_pre_render_14', array( $this, 'populate_user_registration_subjects' ) );
-		add_filter( 'gform_pre_validation_14', array( $this, 'populate_user_registration_subjects' ) );
-		add_filter( 'gform_pre_submission_filter_14', array( $this, 'populate_user_registration_subjects' ) );
-		add_filter( 'gform_admin_pre_render_14', array( $this, 'populate_user_registration_subjects' ) );
+		// Populate the subjects taxonomy in form fields
+		add_filter( 'gform_pre_render', array( $this, 'populate_subjects_field' ) );
+		add_filter( 'gform_pre_validation', array( $this, 'populate_subjects_field' ) );
+		add_filter( 'gform_pre_submission_filter', array( $this, 'populate_subjects_field' ) );
+		add_filter( 'gform_admin_pre_render', array( $this, 'populate_subjects_field' ) );
 
 		// Custom process the user registration form
 		add_action( 'gform_user_registered', array( $this, 'after_user_registration_submission' ), 10, 3 );
@@ -71,9 +71,9 @@ class WPCampus_Forms {
 	}
 
 	/**
-	 * Populate the user registration SMEs with subjects taxonomy.
+	 * Populate the subjects taxonomy in form fields.
 	 */
-	public function populate_user_registration_subjects( $form ) {
+	public function populate_subjects_field( $form ) {
 
 		foreach ( $form['fields'] as &$field ) {
 
