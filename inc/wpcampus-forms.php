@@ -47,6 +47,9 @@ class WPCampus_Forms {
 		// Custom process the user registration form
 		add_action( 'gform_user_registered', array( $this, 'after_user_registration_submission' ), 10, 3 );
 
+		// Process the "Submit Editorial Idea" form submissions
+		add_action( 'gform_after_submission_15', array( $this, 'process_editorial_idea_form' ), 10, 2 );
+
 	}
 
 	/**
@@ -422,6 +425,93 @@ class WPCampus_Forms {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Process the editorial idea form submissions,
+	 */
+	public function process_editorial_idea_form( $entry, $form ) {
+
+		// Only if the editorial plugin exists
+		if ( ! function_exists( 'wpcampus_editorial' ) ) {
+			return;
+		}
+
+		// Build the topic parameters
+		$topic_params = array();
+
+		// Will hold the subjects
+		$wpc_subjects = array();
+
+		// Process each form field by their admin label
+		foreach( $form['fields'] as $field ) {
+			switch( $field->adminLabel ) {
+
+				case 'wpcsubjects':
+
+					// Get all of the subjects and place in array
+					$wpc_subjects = array();
+					foreach( $field->inputs as $input ) {
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							$wpc_subjects[] = $this_data;
+						}
+					}
+					break;
+
+				case 'Topic Content':
+
+					// Get the data
+					$topic_desc = rgar( $entry, $field->id );
+					if ( ! empty( $topic_desc ) ) {
+
+						// Sanitize the data
+						$topic_desc = sanitize_text_field( $topic_desc );
+
+						// Store in topic post
+						$topic_params['post_content'] = $topic_desc;
+
+					}
+					break;
+
+				case 'Topic Title':
+
+					// Get the data
+					$topic_desc = rgar( $entry, $field->id );
+					if ( ! empty( $topic_desc ) ) {
+
+						// Sanitize the data
+						$topic_desc = sanitize_text_field( $topic_desc );
+
+						// Store in topic post
+						$topic_params['post_title'] = $topic_desc;
+
+					}
+					break;
+
+			}
+
+		}
+
+		// Create the topic
+		$topic_id = wpcampus_editorial()->create_topic( $topic_params );
+		if ( ! is_wp_error( $topic_id ) && $topic_id > 0 ) {
+
+			// Store the entry ID
+			add_post_meta( $topic_id, 'gf_entry_id', $entry['id'], true );
+
+			// Assign subjects for topic
+			if ( ! empty( $wpc_subjects ) ) {
+
+				// Make sure its all integers
+				$wpc_subjects = array_map( 'intval', $wpc_subjects );
+
+				// Set the terms for the user
+				wp_set_object_terms( $topic_id, $wpc_subjects, 'subjects', false );
+
+			}
+
+		}
+
 	}
 
 }
