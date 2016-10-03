@@ -78,9 +78,25 @@ class WPCampus_Forms {
 	 */
 	public function filter_field_value( $value, $field, $name ) {
 
-		// Populate the current user ID
-		if ( 'userid' == $name ) {
-			return get_current_user_id();
+		switch( $name ) {
+
+			// Get user information
+			case 'firstname':
+			case 'lastname':
+			case 'email':
+
+				// Get the current user
+				$current_user = wp_get_current_user();
+				if ( ! empty( $current_user->{"user_{$name}"} ) ) {
+					return $current_user->{"user_{$name}"};
+				}
+
+				break;
+
+			// Populate the current user ID
+			case 'userid':
+				return get_current_user_id();
+
 		}
 
 		return $value;
@@ -96,7 +112,7 @@ class WPCampus_Forms {
 			switch ( $field->adminLabel ) {
 
 				// The "Subject Matter Expert" form field
-				case 'subjectexpert':
+				case 'wpcsubjects':
 
 					// Get the subjects terms
 					$subjects = get_terms( array(
@@ -173,7 +189,7 @@ class WPCampus_Forms {
 			// Process fields according to admin label
 			switch( $field[ 'adminLabel' ] ) {
 
-				case 'subjectexpert':
+				case 'wpcsubjects':
 
 					// Get all the user defined subjects and place in array
 					$user_subjects = array();
