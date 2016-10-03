@@ -35,11 +35,14 @@ class WPCampus_Forms {
 		// Convert get involved form entries to CPT upon submission
 		add_action( 'gform_after_submission_1', array( $this, 'get_involved_sub_convert_to_post' ), 10, 2 );
 
-		// Populate the subjects taxonomy in form fields
-		add_filter( 'gform_pre_render', array( $this, 'populate_subjects_field' ) );
-		add_filter( 'gform_pre_validation', array( $this, 'populate_subjects_field' ) );
-		add_filter( 'gform_pre_submission_filter', array( $this, 'populate_subjects_field' ) );
-		add_filter( 'gform_admin_pre_render', array( $this, 'populate_subjects_field' ) );
+		// Filter field values
+		add_filter( 'gform_field_value', array( $this, 'filter_field_value' ), 10, 3 );
+
+		// Populate field choices
+		add_filter( 'gform_pre_render', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_pre_validation', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_pre_submission_filter', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_admin_pre_render', array( $this, 'populate_field_choices' ) );
 
 		// Custom process the user registration form
 		add_action( 'gform_user_registered', array( $this, 'after_user_registration_submission' ), 10, 3 );
@@ -71,53 +74,70 @@ class WPCampus_Forms {
 	}
 
 	/**
-	 * Populate the subjects taxonomy in form fields.
+	 * Filter field values.
 	 */
-	public function populate_subjects_field( $form ) {
+	public function filter_field_value( $value, $field, $name ) {
+
+		// Populate the current user ID
+		if ( 'userid' == $name ) {
+			return get_current_user_id();
+		}
+
+		return $value;
+	}
+
+	/**
+	 * Dynamically populate field choices.
+	 */
+	public function populate_field_choices( $form ) {
 
 		foreach ( $form['fields'] as &$field ) {
 
-			// Only for the "Subject Matter Expert" form field
-			if ( 'subjectexpert' != $field->adminLabel ) {
-				continue;
-			}
+			switch ( $field->adminLabel ) {
 
-			// Get the subjects terms
-			$subjects = get_terms( array(
-				'taxonomy'      => 'subjects',
-				'hide_empty'    => false,
-				'orderby'       => 'name',
-				'order'         => 'ASC',
-				'fields'        => 'all',
-			) );
-			if ( ! empty( $subjects ) ) {
+				// The "Subject Matter Expert" form field
+				case 'subjectexpert':
 
-				// Add the subjects as choices
-				$choices = array();
-				$inputs = array();
+					// Get the subjects terms
+					$subjects = get_terms( array(
+						'taxonomy'      => 'subjects',
+						'hide_empty'    => false,
+						'orderby'       => 'name',
+						'order'         => 'ASC',
+						'fields'        => 'all',
+					) );
+					if ( ! empty( $subjects ) ) {
 
-				$subject_index = 1;
-				foreach ( $subjects as $subject ) {
+						// Add the subjects as choices
+						$choices = array();
+						$inputs = array();
 
-					// Add the choice
-					$choices[] = array(
-						'text'  => $subject->name,
-						'value' => $subject->term_id,
-					);
+						$subject_index = 1;
+						foreach ( $subjects as $subject ) {
 
-					// Add the input
-					$inputs[] = array(
-						'id' => $field->id . '.' . $subject_index,
-						'label' => $subject->name,
-					);
+							// Add the choice
+							$choices[] = array(
+								'text'  => $subject->name,
+								'value' => $subject->term_id,
+							);
 
-					$subject_index++;
+							// Add the input
+							$inputs[] = array(
+								'id' => $field->id . '.' . $subject_index,
+								'label' => $subject->name,
+							);
 
-				}
+							$subject_index++;
 
-				// Assign the new choices and inputs
-				$field->choices = $choices;
-				$field->inputs = $inputs;
+						}
+
+						// Assign the new choices and inputs
+						$field->choices = $choices;
+						$field->inputs = $inputs;
+
+					}
+
+					break;
 
 			}
 
