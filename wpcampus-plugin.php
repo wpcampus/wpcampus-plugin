@@ -343,9 +343,20 @@ class WPCampus_Plugin {
 	 */
 	public function modify_post_type_args( $args, $post_type ) {
 
-		// Customize the capability type so we can customize who can see them in the admin
-		if ( in_array( $post_type, array( 'google_maps', 'podcast' ) ) ) {
-			$args['capability_type'] = array( 'google_map', 'google_maps' );
+		/**
+		 * Customize the capability type so we can
+		 * customize who can see them in the admin.
+		 */
+		switch( $post_type ) {
+
+			case 'google_maps':
+				$args['capability_type'] = array( 'google_map', 'google_maps' );
+				break;
+
+			case 'podcast':
+				$args['capability_type'] = array( 'podcast', 'podcasts' );
+				break;
+
 		}
 
 		return $args;
