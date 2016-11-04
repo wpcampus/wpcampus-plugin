@@ -64,12 +64,6 @@ class WPCampus_Plugin {
 		// Runs when the plugin is upgraded
 		add_action( 'upgrader_process_complete', array( $this, 'upgrader_process_complete' ), 1, 2 );
 
-		// Change the login logo URL
-		add_filter( 'login_headerurl', array( $this, 'change_login_header_url' ) );
-
-		// Hide Query Monitor if admin bar isn't showing
-		add_filter( 'qm/process', array( $this, 'hide_query_monitor' ), 10, 2 );
-
 		// Register our CPTs and taxonomies
 		add_action( 'init', array( $this, 'register_cpts_taxonomies' ) );
 
@@ -117,21 +111,6 @@ class WPCampus_Plugin {
 	 */
 	public function textdomain() {
 		load_plugin_textdomain( 'wpcampus', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
-	}
-
-	/**
-	 * Change the login logo URL to point
-	 * to the site's home page.
-	 */
-	public function change_login_header_url( $login_header_url ) {
-		return get_bloginfo( 'url' );
-	}
-
-	/**
-	 * Hide Query Monitor if admin bar isn't showing.
-	 */
-	public function hide_query_monitor( $show_qm, $is_admin_bar_showing ) {
-		return $is_admin_bar_showing;
 	}
 
 	/**
