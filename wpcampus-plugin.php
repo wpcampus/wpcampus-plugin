@@ -72,6 +72,7 @@ class WPCampus_Plugin {
 
 		// Add our "show if URL parameter is defined" shortcode
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
+		add_shortcode( 'show_if_no_url_param', array( $this, 'show_if_no_url_param_shortcode' ) );
 
 	}
 
@@ -346,13 +347,14 @@ class WPCampus_Plugin {
 	 */
 	public function show_if_url_param_shortcode( $atts, $content = '' ) {
 
-		/**
+		/*
 		 * Loop through each attribute.
 		 *
 		 * Only return the content if one
 		 * of the attributes is found in the $_GET.
 		 */
 		foreach( $atts as $att_key => $att ) {
+
 			if ( isset( $_GET[ $att_key ] ) ) {
 				if ( $att == $_GET[ $att_key ] ) {
 					return $content;
@@ -363,6 +365,29 @@ class WPCampus_Plugin {
 		return '';
 	}
 
+	/**
+	 * Process our "show if specific URL parameter is NOT defined" shortcode.
+	 */
+	public function show_if_no_url_param_shortcode( $atts, $content = '' ) {
+
+		/*
+		 * Loop through each attribute.
+		 *
+		 * Only return the content if none
+		 * of the attributes is found in the $_GET.
+		 */
+		foreach( $atts as $att_key => $att ) {
+
+			if ( isset( $_GET[ $att_key ] ) ) {
+				if ( $att == $_GET[ $att_key ] ) {
+					return '';
+				}
+			}
+		}
+
+		return $content;
+	}
+	
 }
 
 /**
