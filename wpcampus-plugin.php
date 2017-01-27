@@ -73,6 +73,9 @@ class WPCampus_Plugin {
 		// Add our "show if URL parameter is defined" shortcode
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
 		add_shortcode( 'show_if_no_url_param', array( $this, 'show_if_no_url_param_shortcode' ) );
+		
+		// Print tweets
+		add_shortcode( 'print_tweets_grid', array( $this, 'print_tweets_grid' ) );
 
 	}
 
@@ -388,6 +391,29 @@ class WPCampus_Plugin {
 		return $content;
 	}
 	
+	/**
+	 *
+	 */
+	public function print_tweets_grid() {
+		
+		$tweets = array(
+			'https://twitter.com/shelleyKeith/status/792160358899257344',
+			'https://twitter.com/jesselavery/status/792048331149209600',
+			'https://twitter.com/bamadesigner/status/794331594974588929',
+			'https://twitter.com/lacydev/status/792093486757601280',
+		);
+		
+		$markup = '<div class="twitter-tweets">';
+		
+		foreach( $tweets as $tweet ) {
+			$markup .= wp_oembed_get( $tweet );	
+		}
+		
+		$markup .= '</div>';
+
+		return $markup;
+	}
+
 }
 
 /**
