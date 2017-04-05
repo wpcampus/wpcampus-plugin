@@ -1,6 +1,6 @@
-# WPCampus - WP Plugin
+# WPCampus - WordPress Plugin
 
-This WordPress plugin holds theme-independent functionality for the main WPCampus website at [https://wpcampus.org](https://wpcampus.org).
+WordPress plugin that manages theme-independent functionality for the main WPCampus website at [https://wpcampus.org](https://wpcampus.org).
 
 ## Disclaimer
 
