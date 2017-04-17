@@ -18,9 +18,6 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
-// Load the files
-require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-forms.php';
-
 // We only need you in the admin
 if ( is_admin() ) {
 	require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-admin.php';
@@ -55,59 +52,48 @@ class WPCampus_Plugin {
 	 */
 	protected function __construct() {
 
-		// Load our text domain
+		// Load our text domain.
 		add_action( 'init', array( $this, 'textdomain' ) );
 
-		// Runs on install
-		register_activation_hook( __FILE__, array( $this, 'install' ) );
-
-		// Runs when the plugin is upgraded
-		add_action( 'upgrader_process_complete', array( $this, 'upgrader_process_complete' ), 1, 2 );
-
-		// Register our CPTs and taxonomies
+		// Register our CPTs and taxonomies.
 		add_action( 'init', array( $this, 'register_cpts_taxonomies' ) );
 
-		// Modify custom post type arguments from other plugins
+		// Modify custom post type arguments from other plugins.
 		add_filter( 'register_post_type_args', array( $this, 'modify_post_type_args' ), 10, 2 );
 
-		// Add our "show if URL parameter is defined" shortcode
+		// Add our "show if URL parameter is defined" shortcode.
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
 		add_shortcode( 'show_if_no_url_param', array( $this, 'show_if_no_url_param_shortcode' ) );
 		
-		// Print tweets
+		// Print tweets - are we using this?
 		add_shortcode( 'print_tweets_grid', array( $this, 'print_tweets_grid' ) );
+
+		// Convert get involved form entries to CPT upon submission.
+		add_action( 'gform_after_submission_1', array( $this, 'get_involved_sub_convert_to_post' ), 10, 2 );
+
+		// Process the "Submit Editorial Idea" form submissions.
+		add_action( 'gform_after_submission_15', array( $this, 'process_editorial_idea_form' ), 10, 2 );
+
+		// Custom process the user registration form.
+		add_action( 'gform_user_registered', array( $this, 'after_user_registration_submission' ), 10, 3 );
+
+		// Populate field choices.
+		add_filter( 'gform_pre_render', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_pre_validation', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_pre_submission_filter', array( $this, 'populate_field_choices' ) );
+		add_filter( 'gform_admin_pre_render', array( $this, 'populate_field_choices' ) );
 
 	}
 
 	/**
-	 * Method to keep our instance from being cloned.
+	 * Method to keep our instance
+	 * from being cloned or unserialized.
 	 *
 	 * @access	private
 	 * @return	void
 	 */
 	private function __clone() {}
-
-	/**
-	 * Method to keep our instance from being unserialized.
-	 *
-	 * @access	private
-	 * @return	void
-	 */
 	private function __wakeup() {}
-
-	/**
-	 * Runs when the plugin is installed.
-	 *
-	 * @access  public
-	 */
-	public function install() {}
-
-	/**
-	 * Runs when the plugin is upgraded.
-	 *
-	 * @access  public
-	 */
-	public function upgrader_process_complete( $upgrader, $upgrade_info ) {}
 
 	/**
 	 * Internationalization FTW.
@@ -123,37 +109,35 @@ class WPCampus_Plugin {
 	 */
 	function get_lat_long( $address ) {
 
-		// Get Geocode data
+		// Get Geocode data.
 		$geocode = $this->get_geocode( $address );
 		if ( ! empty( $geocode ) ) {
 
-			// Get the geometry
+			// Get the geometry.
 			if ( $geometry = isset( $geocode->geometry ) ? $geocode->geometry : false ) {
 
 				// Get the location
 				if ( $location = isset( $geometry->location ) ? $geometry->location : false ) {
 					return $location;
 				}
-
 			}
-
 		}
 
 		return false;
-
 	}
 
 	/**
-	 * Takes the address and returns geocode data from Google.
+	 * Takes the address and
+	 * returns geocode data from Google.
 	 */
 	function get_geocode( $address ) {
 
-		// Make sure we have an address
+		// Make sure we have an address.
 		if ( ! trim( $address ) ) {
 			return false;
 		}
 
-		// Build maps query - needs Google API Server Key
+		// Build maps query - needs Google API Server Key.
 		$maps_api_key = get_option( 'wpcampus_google_maps_api_key' );
 		$query = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $address ) . "&key=" . $maps_api_key;
 
@@ -166,11 +150,8 @@ class WPCampus_Plugin {
 
 			// Get the first result
 			if ( $result = isset( $data->results ) && is_array($data->results ) ? array_shift( $data->results ) : false ) {
-
 				return $result;
-
 			}
-
 		}
 
 		return false;
@@ -181,7 +162,7 @@ class WPCampus_Plugin {
 	 */
 	public function register_cpts_taxonomies() {
 
-		// Register private WPCampus interest CPT
+		// Register private WPCampus interest CPT.
 		register_post_type( 'wpcampus_interest', array(
 			'labels'             => array(
 				'name'               => __( 'Interest', 'wpcampus' ),
@@ -202,7 +183,7 @@ class WPCampus_Plugin {
 			'can_export'            => false,
 		) );
 
-		// Register the universities CPT
+		// Register the universities CPT.
 		register_post_type( 'universities', array(
 			'labels'                => array(
 				'name'              => __( 'Universities', 'wpcampus' ),
@@ -250,7 +231,7 @@ class WPCampus_Plugin {
 			'can_export'            => true,
 		) );
 
-		// Add university categories taxonomy
+		// Add university categories taxonomy.
 		register_taxonomy( 'university_cats', 'universities', array(
 			'labels' => array(
 				'name'          => __( 'Categories', 'wpcampus' ),
@@ -281,7 +262,7 @@ class WPCampus_Plugin {
 			)
 		));
 
-		// Add subjects taxonomy
+		// Add subjects taxonomy.
 		register_taxonomy( 'subjects', array( 'post', 'topics', 'user' ), array(
 			'label'					    => __( 'Subjects', 'wpcampus' ),
 			'labels'                    => array(
@@ -326,11 +307,11 @@ class WPCampus_Plugin {
 	 */
 	public function modify_post_type_args( $args, $post_type ) {
 
-		/**
+		/*
 		 * Customize the capability type so we can
 		 * customize who can see them in the admin.
 		 */
-		switch( $post_type ) {
+		switch ( $post_type ) {
 
 			case 'google_maps':
 				$args['capability_type'] = array( 'google_map', 'google_maps' );
@@ -346,7 +327,8 @@ class WPCampus_Plugin {
 	}
 
 	/**
-	 * Process our "show if URL parameter is defined" shortcode.
+	 * Process our "show if URL
+	 * parameter is defined" shortcode.
 	 */
 	public function show_if_url_param_shortcode( $atts, $content = '' ) {
 
@@ -356,7 +338,7 @@ class WPCampus_Plugin {
 		 * Only return the content if one
 		 * of the attributes is found in the $_GET.
 		 */
-		foreach( $atts as $att_key => $att ) {
+		foreach ( $atts as $att_key => $att ) {
 
 			if ( isset( $_GET[ $att_key ] ) ) {
 				if ( $att == $_GET[ $att_key ] ) {
@@ -369,7 +351,8 @@ class WPCampus_Plugin {
 	}
 
 	/**
-	 * Process our "show if specific URL parameter is NOT defined" shortcode.
+	 * Process our "show if specific URL
+	 * parameter is NOT defined" shortcode.
 	 */
 	public function show_if_no_url_param_shortcode( $atts, $content = '' ) {
 
@@ -379,7 +362,7 @@ class WPCampus_Plugin {
 		 * Only return the content if none
 		 * of the attributes is found in the $_GET.
 		 */
-		foreach( $atts as $att_key => $att ) {
+		foreach ( $atts as $att_key => $att ) {
 
 			if ( isset( $_GET[ $att_key ] ) ) {
 				if ( $att == $_GET[ $att_key ] ) {
@@ -392,7 +375,7 @@ class WPCampus_Plugin {
 	}
 	
 	/**
-	 *
+	 * Are we using this?
 	 */
 	public function print_tweets_grid() {
 		
@@ -404,8 +387,8 @@ class WPCampus_Plugin {
 		);
 		
 		$markup = '<div class="twitter-tweets">';
-		
-		foreach( $tweets as $tweet ) {
+
+		foreach ( $tweets as $tweet ) {
 			$markup .= wp_oembed_get( $tweet );	
 		}
 		
@@ -414,6 +397,406 @@ class WPCampus_Plugin {
 		return $markup;
 	}
 
+	/**
+	 * Convert get involved form entries to CPT upon submission.
+	 */
+	public function get_involved_sub_convert_to_post( $entry, $form ) {
+
+		// Convert this entry to a post.
+		$this->convert_get_involved_entry_to_post( $entry, $form );
+
+	}
+
+	/**
+	 * Process specific form entry to convert to CPT.
+	 *
+	 * Can pass entry or form object or entry or form ID.
+	 */
+	public function convert_get_involved_entry_to_post( $entry, $form ) {
+
+		// If ID, get the entry.
+		if ( is_numeric( $entry ) && $entry > 0 ) {
+			$entry = GFAPI::get_entry( $entry );
+		}
+
+		// If ID, get the form.
+		if ( is_numeric( $form ) && $form > 0 ) {
+			$form = GFAPI::get_form( $form );
+		}
+
+		// Make sure we have some info.
+		if ( ! $entry || ! $form ) {
+			return false;
+		}
+
+		// Set the entry id.
+		$entry_id = $entry['id'];
+
+		// First, check to see if the entry has already been processed.
+		$entry_post = wpcampus_forms()->get_entry_post( $entry_id, 'wpcampus_interest' );
+
+		// If this entry has already been processed, then skip.
+		if ( $entry_post && isset( $entry_post->ID ) ) {
+			return false;
+		}
+
+		/*
+		 * Fields to store in post meta.
+		 *
+		 * Names will be used dynamically
+		 * when processing fields below.
+		 */
+		$fields_to_store = array(
+			'name',
+			'involvement',
+			'sessions',
+			'event_time',
+			'email',
+			'status',
+			'employer',
+			'attend_preference',
+			'traveling_city',
+			'traveling_state',
+			'traveling_country',
+			'traveling_latitude',
+			'traveling_longitude',
+			'slack_invite',
+			'slack_email',
+		);
+
+		// Process one field at a time.
+		foreach ( $form[ 'fields']  as $field ) {
+
+			// Set the admin label.
+			$admin_label = strtolower( preg_replace( '/\s/i', '_', $field[ 'adminLabel' ] ) );
+
+			/*
+			 * Only process if one of our fields.
+			 *
+			 * We need to process traveling_from but not store
+			 * it in post meta which is why it's not in the array.
+			 */
+			if ( ! in_array( $admin_label, array_merge( $fields_to_store, array( 'traveling_from' ) ) ) ) {
+				continue;
+			}
+
+			// Process fields according to admin label.
+			switch ( $admin_label ) {
+
+				case 'name':
+
+					// Get name parts.
+					$first_name = null;
+					$last_name = null;
+
+					// Process each name part.
+					foreach ( $field->inputs as $input ) {
+						$name_label = strtolower( $input['label'] );
+						switch ( $name_label ) {
+							case 'first':
+							case 'last':
+								${$name_label.'_name'} = rgar( $entry, $input['id'] );
+								break;
+						}
+					}
+
+					// Build name to use when creating post.
+					$name = trim( "{$first_name} {$last_name}" );
+
+					break;
+
+				case 'involvement':
+				case 'sessions':
+				case 'event_time':
+
+					// Get all the input data and place in array.
+					${$admin_label} = array();
+					foreach ( $field->inputs as $input ) {
+
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							${$admin_label}[] = $this_data;
+						}
+					}
+
+					break;
+
+				case 'traveling_from':
+
+					// Get all the input data and place in array.
+					${$admin_label} = array();
+					foreach ( $field->inputs as $input ) {
+
+						// Create the data index.
+						$input_label = strtolower( preg_replace( '/\s/i', '_', preg_replace( '/\s\/\s/i', '_', $input['label'] ) ) );
+
+						// Change to simply state.
+						if ( 'state_province' == $input_label ) {
+							$input_label = 'state';
+						}
+
+						// Store data.
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							${"traveling_{$input_label}"} = $this_data;
+						}
+
+						// Store all traveling data in an array
+						${$admin_label}[$input_label] = $this_data;
+
+					}
+
+					// Create string of traveling data.
+					$traveling_string = preg_replace( '/[\s]{2,}/i', ' ', implode( ' ', ${$admin_label} ) );
+
+					// Get latitude and longitude.
+					$traveling_lat_long = wpcampus_plugin()->get_lat_long( $traveling_string );
+					if ( ! empty( $traveling_lat_long ) ) {
+
+						// Store data (will be stored in post meta later).
+						$traveling_latitude = isset( $traveling_lat_long->lat ) ? $traveling_lat_long->lat : false;
+						$traveling_longitude = isset( $traveling_lat_long->lng ) ? $traveling_lat_long->lng : false;
+
+					}
+
+					break;
+
+				// Get everyone else.
+				default:
+
+					// Get field value.
+					${$admin_label} = rgar( $entry, $field->id );
+
+					break;
+			}
+		}
+
+		// Create entry post title.
+		$post_title = "Entry #{$entry_id}";
+
+		// Add name.
+		if ( ! empty( $name ) ) {
+			$post_title .= " - {$name}";
+		}
+
+		// Create entry.
+		$new_entry_post_id = wp_insert_post( array(
+			'post_type'     => 'wpcampus_interest',
+			'post_status'   => 'publish',
+			'post_title'    => $post_title,
+			'post_content'  => '',
+		));
+		if ( $new_entry_post_id > 0 ) {
+
+			// Store entry ID in post.
+			update_post_meta( $new_entry_post_id, 'gf_entry_id', $entry_id );
+
+			// Store post ID in the entry.
+			GFAPI::update_entry_property( $entry_id, 'post_id', $new_entry_post_id );
+
+			// Store fields.
+			foreach ( $fields_to_store as $field_name ) {
+				update_post_meta( $new_entry_post_id, $field_name, ${$field_name} );
+			}
+
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Process the editorial idea form submissions.
+	 */
+	public function process_editorial_idea_form( $entry, $form ) {
+
+		// Only if the editorial plugin exists.
+		if ( ! function_exists( 'wpcampus_editorial' ) ) {
+			return;
+		}
+
+		// Build the topic parameters.
+		$topic_params = array();
+
+		// Will hold the subjects.
+		$wpc_subjects = array();
+
+		// Process each form field by their admin label.
+		foreach ( $form['fields'] as $field ) {
+			switch ( $field->adminLabel ) {
+
+				case 'wpcsubjects':
+
+					// Get all of the subjects and place in array.
+					$wpc_subjects = array();
+					foreach ( $field->inputs as $input ) {
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							$wpc_subjects[] = $this_data;
+						}
+					}
+					break;
+
+				case 'Topic Content':
+
+					// Get the data.
+					$topic_desc = rgar( $entry, $field->id );
+					if ( ! empty( $topic_desc ) ) {
+
+						// Sanitize the data.
+						$topic_desc = sanitize_text_field( $topic_desc );
+
+						// Store in topic post.
+						$topic_params['post_content'] = $topic_desc;
+
+					}
+					break;
+
+				case 'Topic Title':
+
+					// Get the data.
+					$topic_desc = rgar( $entry, $field->id );
+					if ( ! empty( $topic_desc ) ) {
+
+						// Sanitize the data.
+						$topic_desc = sanitize_text_field( $topic_desc );
+
+						// Store in topic post.
+						$topic_params['post_title'] = $topic_desc;
+
+					}
+					break;
+			}
+		}
+
+		// Create the topic.
+		$topic_id = wpcampus_editorial()->create_topic( $topic_params );
+		if ( ! is_wp_error( $topic_id ) && $topic_id > 0 ) {
+
+			// Store the entry ID.
+			add_post_meta( $topic_id, 'gf_entry_id', $entry['id'], true );
+
+			// Assign subjects for topic.
+			if ( ! empty( $wpc_subjects ) ) {
+
+				// Make sure its all integers.
+				$wpc_subjects = array_map( 'intval', $wpc_subjects );
+
+				// Set the terms for the user.
+				wp_set_object_terms( $topic_id, $wpc_subjects, 'subjects', false );
+
+			}
+		}
+	}
+
+	/**
+	 * Custom process the user registration form.
+	 */
+	public function after_user_registration_submission( $user_id, $feed, $entry ) {
+
+		// If entry is the ID, get the entry
+		if ( is_numeric( $entry ) && $entry > 0 ) {
+			$entry = GFAPI::get_entry( $entry );
+		}
+
+		// Get the form
+		$form = false;
+		if ( isset( $feed['form_id'] ) && $feed['form_id'] > 0 ) {
+			$form = GFAPI::get_form( $feed['form_id'] );
+		}
+
+		// Make sure we have some info
+		if ( ! $entry || ! $form ) {
+			return false;
+		}
+
+		// Process one field at a time
+		foreach( $form[ 'fields']  as $field ) {
+
+			// Process fields according to admin label
+			switch( $field[ 'adminLabel' ] ) {
+
+				case 'wpcsubjects':
+
+					// Get all the user defined subjects and place in array
+					$user_subjects = array();
+					foreach( $field->inputs as $input ) {
+						if ( $this_data = rgar( $entry, $input['id'] ) ) {
+							$user_subjects[] = $this_data;
+						}
+					}
+
+					// Make sure we have a subjects
+					if ( ! empty( $user_subjects ) ) {
+
+						// Make sure its all integers
+						$user_subjects = array_map( 'intval', $user_subjects );
+
+						// Set the terms for the user
+						wp_set_object_terms( $user_id, $user_subjects, 'subjects', false );
+
+					}
+
+					break;
+
+			}
+		}
+	}
+
+	/**
+	 * Dynamically populate field choices.
+	 */
+	public function populate_field_choices( $form ) {
+
+		foreach ( $form['fields'] as &$field ) {
+
+			switch ( $field->adminLabel ) {
+
+				// The "Subject Matter Expert" form field.
+				case 'wpcsubjects':
+
+					// Get the subjects terms.
+					$subjects = get_terms( array(
+						'taxonomy'      => 'subjects',
+						'hide_empty'    => false,
+						'orderby'       => 'name',
+						'order'         => 'ASC',
+						'fields'        => 'all',
+					) );
+					if ( ! empty( $subjects ) ) {
+
+						// Add the subjects as choices.
+						$choices = array();
+						$inputs = array();
+
+						$subject_index = 1;
+						foreach ( $subjects as $subject ) {
+
+							// Add the choice.
+							$choices[] = array(
+								'text'  => $subject->name,
+								'value' => $subject->term_id,
+							);
+
+							// Add the input.
+							$inputs[] = array(
+								'id'    => $field->id . '.' . $subject_index,
+								'label' => $subject->name,
+							);
+
+							$subject_index++;
+
+						}
+
+						// Assign the new choices and inputs.
+						$field->choices = $choices;
+						$field->inputs = $inputs;
+
+					}
+
+					break;
+			}
+		}
+
+		return $form;
+	}
 }
 
 /**
