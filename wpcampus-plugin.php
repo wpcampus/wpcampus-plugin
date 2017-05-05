@@ -414,6 +414,11 @@ class WPCampus_Plugin {
 	 */
 	public function convert_get_involved_entry_to_post( $entry, $form ) {
 
+		// Make sure GFAPI exists.
+		if ( ! class_exists( 'GFAPI' ) ) {
+			return false;
+		}
+
 		// If ID, get the entry.
 		if ( is_numeric( $entry ) && $entry > 0 ) {
 			$entry = GFAPI::get_entry( $entry );
@@ -690,6 +695,11 @@ class WPCampus_Plugin {
 	 * Custom process the user registration form.
 	 */
 	public function after_user_registration_submission( $user_id, $feed, $entry ) {
+
+		// Make sure GFAPI exists.
+		if ( ! class_exists( 'GFAPI' ) ) {
+			return false;
+		}
 
 		// If entry is the ID, get the entry
 		if ( is_numeric( $entry ) && $entry > 0 ) {

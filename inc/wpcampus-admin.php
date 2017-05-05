@@ -370,6 +370,11 @@ class WPCampus_Admin {
 		// NOT USING NOW.
 		return;
 
+		// Make sure GFAPI exists.
+		if ( ! class_exists( 'GFAPI' ) ) {
+			return false;
+		}
+
 		// ID for interest form.
 		$form_id = 1;
 
