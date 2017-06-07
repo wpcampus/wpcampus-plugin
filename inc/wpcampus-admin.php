@@ -218,6 +218,10 @@ class WPCampus_Admin {
 		// Add Slack username.
 		$methods['slack_username'] = sprintf( __( '%1$s %2$s Username', 'wpcampus' ), 'WPCampus', 'Slack' );
 
+		// Add company and position.
+		$methods['company'] = __( 'Company', 'wpcampus' );
+		$methods['company_position'] = __( 'Company Position', 'wpcampus' );
+
 		return $methods;
 	}
 
