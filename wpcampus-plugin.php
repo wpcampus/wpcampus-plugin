@@ -83,6 +83,9 @@ class WPCampus_Plugin {
 		add_filter( 'gform_pre_submission_filter', array( $this, 'populate_field_choices' ) );
 		add_filter( 'gform_admin_pre_render', array( $this, 'populate_field_choices' ) );
 
+		// Set the multi author post types for the main site.
+		add_filter( 'my_multi_author_post_types', array( $this, 'filter_multi_author_post_types' ) );
+
 	}
 
 	/**
@@ -806,6 +809,16 @@ class WPCampus_Plugin {
 		}
 
 		return $form;
+	}
+
+	/**
+	 * Set the multi author post types for the main site.
+	 *
+	 * @param   $post_types - array - the default post types.
+	 * @return  array - the filtered post types.
+	 */
+	public function filter_multi_author_post_types( $post_types ) {
+		return array_merge( $post_types, array( 'post', 'podcast', 'video' ) );
 	}
 }
 
