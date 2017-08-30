@@ -265,40 +265,6 @@ class WPCampus_Plugin {
 				'assign_terms'      => 'edit_universities',
 			),
 		));
-
-		// Add subjects taxonomy.
-		register_taxonomy( 'subjects', array( 'post', 'topics', 'user' ), array(
-			'label'					    => __( 'Subjects', 'wpcampus' ),
-			'labels'                    => array(
-				'name'                      => _x( 'Subjects', 'Taxonomy General Name', 'wpcampus' ),
-				'singular_name'             => _x( 'Subject', 'Taxonomy Singular Name', 'wpcampus' ),
-				'menu_name'                 => __( 'Subjects', 'wpcampus' ),
-				'all_items'                 => __( 'All Subjects', 'wpcampus' ),
-				'parent_item'               => __( 'Parent Subject', 'wpcampus' ),
-				'parent_item_colon'         => __( 'Parent Subject:', 'wpcampus' ),
-				'new_item_name'             => __( 'New Subject Name', 'wpcampus' ),
-				'add_new_item'              => __( 'Add New Subject', 'wpcampus' ),
-				'edit_item'                 => __( 'Edit Subject', 'wpcampus' ),
-				'update_item'               => __( 'Update Subject', 'wpcampus' ),
-				'view_item'                 => __( 'View Subject', 'wpcampus' ),
-				'separate_items_with_commas'=> __( 'Separate subjects with commas', 'wpcampus' ),
-				'add_or_remove_items'       => __( 'Add or remove subjects', 'wpcampus' ),
-				'choose_from_most_used'     => __( 'Choose from the most used', 'wpcampus' ),
-				'popular_items'             => __( 'Popular Subjects', 'wpcampus' ),
-				'search_items'              => __( 'Search Subjects', 'wpcampus' ),
-				'not_found'                 => __( 'Not Found', 'wpcampus' ),
-				'no_terms'                  => __( 'No subjects', 'wpcampus' ),
-				'items_list'                => __( 'Subjects list', 'wpcampus' ),
-				'items_list_navigation'     => __( 'Subjects list', 'wpcampus' ),
-			),
-			'hierarchical'              => true,
-			'public'                    => true,
-			'show_ui'                   => true,
-			'show_admin_column'         => true,
-			'show_in_nav_menus'         => false,
-			'show_tagcloud'             => false,
-		));
-
 	}
 
 	/**
