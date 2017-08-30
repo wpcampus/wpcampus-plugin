@@ -32,9 +32,6 @@ class WPCampus_Admin {
 	 */
 	protected function __construct() {
 
-		// Add admin pages.
-		add_action( 'admin_menu', array( $this, 'add_pages' ) );
-
 		// Add any general meta boxes.
 		add_action( 'add_meta_boxes', array( $this, 'add_meta_boxes' ), 1, 2 );
 
@@ -70,23 +67,6 @@ class WPCampus_Admin {
 	 */
 	private function __clone() {}
 	private function __wakeup() {}
-
-	/**
-	 * Add administration pages.
-	 */
-	public function add_pages() {
-
-		// Add "Find SME" users page.
-		add_users_page( __( 'Find A Subject-Matter Expert', 'wpcampus' ), __( 'Find SME', 'wpcampus' ), 'read', 'find-sme', array( $this, 'print_users_find_sme_page' ) );
-
-	}
-
-	/**
-	 * Print the users "Find SME" page.
-	 */
-	public function print_users_find_sme_page() {
-		require_once plugin_dir_path( dirname( __FILE__ ) ) . 'partials/users-find-sme.php';
-	}
 
 	/**
 	 * Adds our admin meta boxes.
