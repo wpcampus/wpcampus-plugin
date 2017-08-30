@@ -1,0 +1,23 @@
+{
+  "name": "wpcampus/wpcampus-plugin",
+  "description": "Holds plugin functionality for the main WPCampus website.",
+  "type": "wordpress-plugin",
+  "license": "GPL2.0+",
+  "authors": [
+    {
+      "name": "WPCampus",
+      "email": "code@wpcampus.org"
+    }
+  ],
+  "require-dev": {
+    "squizlabs/php_codesniffer": "*",
+    "wp-coding-standards/wpcs": "*"
+  },
+  "scripts": {
+    "post-install-cmd": [
+      "./vendor/bin/phpcs --config-set bin ./vendor/bin/phpcs",
+      "./vendor/bin/phpcs --config-set installed_paths ../../wp-coding-standards/wpcs",
+      "./vendor/bin/phpcs --config-set standard WordPress-Core"
+    ]
+  }
+}

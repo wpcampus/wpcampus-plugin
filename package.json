@@ -1,0 +1,19 @@
+{
+  "name": "wpcampus-plugin",
+  "version": "1.0.0",
+  "description": "Holds plugin functionality for the main WPCampus website.",
+  "license": "GPL",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wpcampus/wpcampus-plugin.git"
+  },
+  "author": "WPCampus",
+  "private": true,
+  "devDependencies": {
+    "gulp": "^3.9.1",
+    "gulp-phpcs": "^2.0.0",
+    "gulp-sort": "^2.0.0",
+    "gulp-watch": "^4.3.9",
+    "gulp-wp-pot": "^1.3.0"
+  }
+}

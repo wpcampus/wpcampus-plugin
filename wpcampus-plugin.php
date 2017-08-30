@@ -41,8 +41,8 @@ class WPCampus_Plugin {
 	 */
 	public static function instance() {
 		if ( ! isset( self::$instance ) ) {
-			$className = __CLASS__;
-			self::$instance = new $className;
+			$class_name = __CLASS__;
+			self::$instance = new $class_name;
 		}
 		return self::$instance;
 	}
@@ -64,7 +64,7 @@ class WPCampus_Plugin {
 		// Add our "show if URL parameter is defined" shortcode.
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
 		add_shortcode( 'show_if_no_url_param', array( $this, 'show_if_no_url_param_shortcode' ) );
-		
+
 		// Print tweets - are we using this?
 		add_shortcode( 'print_tweets_grid', array( $this, 'print_tweets_grid' ) );
 
@@ -142,17 +142,18 @@ class WPCampus_Plugin {
 
 		// Build maps query - needs Google API Server Key.
 		$maps_api_key = get_option( 'wpcampus_google_maps_api_key' );
-		$query = "https://maps.googleapis.com/maps/api/geocode/json?address=" . urlencode( $address ) . "&key=" . $maps_api_key;
+		$query = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode( $address ) . '&key=' . $maps_api_key;
 
 		// If data is returned...
 		if ( ( $response = wp_remote_get( $query ) )
-		     && ( $data = wp_remote_retrieve_body( $response ) ) ) {
+			&& ( $data = wp_remote_retrieve_body( $response ) ) ) {
 
 			// Decode the data
 			$data = json_decode( $data );
 
-			// Get the first result
-			if ( $result = isset( $data->results ) && is_array($data->results ) ? array_shift( $data->results ) : false ) {
+			// Get the first result.
+			$result = isset( $data->results ) && is_array( $data->results ) ? array_shift( $data->results ) : false;
+			if ( $result ) {
 				return $result;
 			}
 		}
@@ -188,81 +189,81 @@ class WPCampus_Plugin {
 
 		// Register the universities CPT.
 		register_post_type( 'universities', array(
-			'labels'                => array(
-				'name'              => __( 'Universities', 'wpcampus' ),
-				'singular_name'     => __( 'University', 'wpcampus' ),
-				'add_new'           => __( 'Add New', 'wpcampus' ),
-				'add_new_item'      => __( 'Add New University', 'wpcampus' ),
-				'edit_item'         => __( 'Edit University', 'wpcampus' ),
-				'new_item'          => __( 'New University', 'wpcampus' ),
-				'all_items'         => __( 'All Universities', 'wpcampus' ),
-				'view_item'         => __( 'View University', 'wpcampus' ),
-				'search_items'      => __( 'Search Universities', 'wpcampus' ),
-				'not_found'         => __( 'No universities found', 'wpcampus' ),
-				'not_found_in_trash'=> __( 'No universities found in trash', 'wpcampus' ),
-				'parent_item_colon' => __( 'Parent University', 'wpcampus' ),
+			'labels' => array(
+				'name'                  => __( 'Universities', 'wpcampus' ),
+				'singular_name'         => __( 'University', 'wpcampus' ),
+				'add_new'               => __( 'Add New', 'wpcampus' ),
+				'add_new_item'          => __( 'Add New University', 'wpcampus' ),
+				'edit_item'             => __( 'Edit University', 'wpcampus' ),
+				'new_item'              => __( 'New University', 'wpcampus' ),
+				'all_items'             => __( 'All Universities', 'wpcampus' ),
+				'view_item'             => __( 'View University', 'wpcampus' ),
+				'search_items'          => __( 'Search Universities', 'wpcampus' ),
+				'not_found'             => __( 'No universities found', 'wpcampus' ),
+				'not_found_in_trash'    => __( 'No universities found in trash', 'wpcampus' ),
+				'parent_item_colon'     => __( 'Parent University', 'wpcampus' ),
 			),
-			'public'                => false,
-			'hierarchical'          => false,
-			'supports'              => array( 'title', 'editor' ),
-			'has_archive'           => false,
-			'show_ui'               => true,
-			'show_in_menu'          => true,
-			'menu_icon'             => 'dashicons-welcome-learn-more',
-			'show_in_nav_menus'     => false,
-			'show_in_admin_bar'     => true,
-			'publicly_queryable'    => false,
-			'exclude_from_search'   => true,
-			'capabilities'          => array(
-				'edit_post'         => 'edit_university',
-				'edit_posts'        => 'edit_universities',
-				'edit_others_posts' => 'edit_others_universities',
-				'edit_private_posts'=> 'edit_private_universities',
-				'edit_published_posts' => 'edit_published_universities',
-				'read'              => 'read_university',
-				'read_post'         => 'read_university',
-				'read_private_posts'=> 'read_private_universities',
-				'delete_post'       => 'delete_university',
-				'delete_posts'      => 'delete_universities',
-				'delete_private_posts' => 'delete_private_universities',
+			'public'                    => false,
+			'hierarchical'              => false,
+			'supports'                  => array( 'title', 'editor' ),
+			'has_archive'               => false,
+			'show_ui'                   => true,
+			'show_in_menu'              => true,
+			'menu_icon'                 => 'dashicons-welcome-learn-more',
+			'show_in_nav_menus'         => false,
+			'show_in_admin_bar'         => true,
+			'publicly_queryable'        => false,
+			'exclude_from_search'       => true,
+			'capabilities' => array(
+				'edit_post'             => 'edit_university',
+				'edit_posts'            => 'edit_universities',
+				'edit_others_posts'     => 'edit_others_universities',
+				'edit_private_posts'    => 'edit_private_universities',
+				'edit_published_posts'  => 'edit_published_universities',
+				'read'                  => 'read_university',
+				'read_post'             => 'read_university',
+				'read_private_posts'    => 'read_private_universities',
+				'delete_post'           => 'delete_university',
+				'delete_posts'          => 'delete_universities',
+				'delete_private_posts'  => 'delete_private_universities',
 				'delete_published_posts' => 'delete_published_universities',
-				'delete_others_posts' => 'delete_others_universities',
-				'publish_posts'     => 'publish_universities',
-				'create_posts'      => 'edit_universities'
+				'delete_others_posts'   => 'delete_others_universities',
+				'publish_posts'         => 'publish_universities',
+				'create_posts'          => 'edit_universities',
 			),
-			'rewrite'               => false,
-			'can_export'            => true,
+			'rewrite'                   => false,
+			'can_export'                => true,
 		) );
 
 		// Add university categories taxonomy.
 		register_taxonomy( 'university_cats', 'universities', array(
 			'labels' => array(
-				'name'          => __( 'Categories', 'wpcampus' ),
-				'singular_name' => __( 'Category', 'wpcampus' ),
-				'search_items'  => __( 'Search Categories', 'wpcampus' ),
-				'all_items'     => __( 'All Categories', 'wpcampus' ),
-				'parent_item'   => __( 'Parent Category', 'wpcampus' ),
+				'name'              => __( 'Categories', 'wpcampus' ),
+				'singular_name'     => __( 'Category', 'wpcampus' ),
+				'search_items'      => __( 'Search Categories', 'wpcampus' ),
+				'all_items'         => __( 'All Categories', 'wpcampus' ),
+				'parent_item'       => __( 'Parent Category', 'wpcampus' ),
 				'parent_item_colon' => __( 'Parent Category:', 'wpcampus' ),
-				'edit_item'     => __( 'Edit Category', 'wpcampus' ),
-				'update_item'   => __( 'Update Category', 'wpcampus' ),
-				'add_new_item'  => __( 'Add New Category', 'wpcampus' ),
-				'new_item_name' => __( 'New Category Name', 'wpcampus' ),
-				'menu_name'     => __( 'Categories', 'wpcampus' ),
+				'edit_item'         => __( 'Edit Category', 'wpcampus' ),
+				'update_item'       => __( 'Update Category', 'wpcampus' ),
+				'add_new_item'      => __( 'Add New Category', 'wpcampus' ),
+				'new_item_name'     => __( 'New Category Name', 'wpcampus' ),
+				'menu_name'         => __( 'Categories', 'wpcampus' ),
 			),
-			'public'            => false,
-			'show_ui'           => true,
-			'show_in_nav_menus' => false,
-			'show_tagcloud'     => false,
-			'show_in_quick_edit'=> true,
-			'show_admin_column' => true,
-			'hierarchical'      => true,
-			'rewrite'           => false,
-			'capabilities'      => array(
-				'manage_terms'  => 'manage_univ_categories',
-				'edit_terms'    => 'manage_univ_categories',
-				'delete_terms'  => 'manage_univ_categories',
-				'assign_terms'  => 'edit_universities',
-			)
+			'public'                => false,
+			'show_ui'               => true,
+			'show_in_nav_menus'     => false,
+			'show_tagcloud'         => false,
+			'show_in_quick_edit'    => true,
+			'show_admin_column'     => true,
+			'hierarchical'          => true,
+			'rewrite'               => false,
+			'capabilities' => array(
+				'manage_terms'      => 'manage_univ_categories',
+				'edit_terms'        => 'manage_univ_categories',
+				'delete_terms'      => 'manage_univ_categories',
+				'assign_terms'      => 'edit_universities',
+			),
 		));
 
 		// Add subjects taxonomy.
@@ -296,7 +297,7 @@ class WPCampus_Plugin {
 			'show_admin_column'         => true,
 			'show_in_nav_menus'         => false,
 			'show_tagcloud'             => false,
-		) );
+		));
 
 	}
 
@@ -376,28 +377,26 @@ class WPCampus_Plugin {
 
 		return $content;
 	}
-	
+
 	/**
 	 * Are we using this?
 	 */
 	public function print_tweets_grid() {
-		
+
 		$tweets = array(
 			'https://twitter.com/shelleyKeith/status/792160358899257344',
 			'https://twitter.com/jesselavery/status/792048331149209600',
 			'https://twitter.com/bamadesigner/status/794331594974588929',
 			'https://twitter.com/lacydev/status/792093486757601280',
 		);
-		
-		$markup = '<div class="twitter-tweets">';
 
+		// Get oembeds for each tweet.
+		$markup = '';
 		foreach ( $tweets as $tweet ) {
-			$markup .= wp_oembed_get( $tweet );	
+			$markup .= wp_oembed_get( $tweet );
 		}
-		
-		$markup .= '</div>';
 
-		return $markup;
+		return ! empty( $markup ) ? '<div class="twitter-tweets">' . $markup . '</div>' : '';
 	}
 
 	/**
@@ -473,10 +472,10 @@ class WPCampus_Plugin {
 		);
 
 		// Process one field at a time.
-		foreach ( $form[ 'fields']  as $field ) {
+		foreach ( $form['fields'] as $field ) {
 
 			// Set the admin label.
-			$admin_label = strtolower( preg_replace( '/\s/i', '_', $field[ 'adminLabel' ] ) );
+			$admin_label = strtolower( preg_replace( '/\s/i', '_', $field['adminLabel'] ) );
 
 			/*
 			 * Only process if one of our fields.
@@ -503,7 +502,7 @@ class WPCampus_Plugin {
 						switch ( $name_label ) {
 							case 'first':
 							case 'last':
-								${$name_label.'_name'} = rgar( $entry, $input['id'] );
+								${$name_label . '_name'} = rgar( $entry, $input['id'] );
 								break;
 						}
 					}
@@ -548,7 +547,7 @@ class WPCampus_Plugin {
 						}
 
 						// Store all traveling data in an array
-						${$admin_label}[$input_label] = $this_data;
+						${$admin_label}[ $input_label ] = $this_data;
 
 					}
 
@@ -704,51 +703,50 @@ class WPCampus_Plugin {
 			return false;
 		}
 
-		// If entry is the ID, get the entry
+		// If entry is the ID, get the entry.
 		if ( is_numeric( $entry ) && $entry > 0 ) {
 			$entry = GFAPI::get_entry( $entry );
 		}
 
-		// Get the form
+		// Get the form.
 		$form = false;
 		if ( isset( $feed['form_id'] ) && $feed['form_id'] > 0 ) {
 			$form = GFAPI::get_form( $feed['form_id'] );
 		}
 
-		// Make sure we have some info
+		// Make sure we have some info.
 		if ( ! $entry || ! $form ) {
 			return false;
 		}
 
-		// Process one field at a time
-		foreach( $form[ 'fields']  as $field ) {
+		// Process one field at a time.
+		foreach ( $form['fields']  as $field ) {
 
-			// Process fields according to admin label
-			switch( $field[ 'adminLabel' ] ) {
+			// Process fields according to admin label.
+			switch ( $field['adminLabel'] ) {
 
 				case 'wpcsubjects':
 
-					// Get all the user defined subjects and place in array
+					// Get all the user defined subjects and place in array.
 					$user_subjects = array();
-					foreach( $field->inputs as $input ) {
+					foreach ( $field->inputs as $input ) {
 						if ( $this_data = rgar( $entry, $input['id'] ) ) {
 							$user_subjects[] = $this_data;
 						}
 					}
 
-					// Make sure we have a subjects
+					// Make sure we have a subjects.
 					if ( ! empty( $user_subjects ) ) {
 
-						// Make sure its all integers
+						// Make sure its all integers.
 						$user_subjects = array_map( 'intval', $user_subjects );
 
-						// Set the terms for the user
+						// Set the terms for the user.
 						wp_set_object_terms( $user_id, $user_subjects, 'subjects', false );
 
 					}
 
 					break;
-
 			}
 		}
 	}
@@ -772,7 +770,7 @@ class WPCampus_Plugin {
 						'orderby'       => 'name',
 						'order'         => 'ASC',
 						'fields'        => 'all',
-					) );
+					));
 					if ( ! empty( $subjects ) ) {
 
 						// Add the subjects as choices.
