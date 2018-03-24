@@ -1,7 +1,6 @@
 <?php
-
 /**
- * Plugin Name:       WPCampus - Plugin
+ * Plugin Name:       WPCampus: Main Site General Plugin
  * Plugin URI:        https://wpcampus.org
  * Description:       Holds plugin functionality for the main WPCampus website.
  * Version:           1.0.0
