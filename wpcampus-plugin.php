@@ -17,9 +17,13 @@ if ( ! defined( 'WPINC' ) ) {
 	die;
 }
 
+$plugin_dir = plugin_dir_path( __FILE__ );
+
+require_once $plugin_dir . 'inc/class-wpcampus-main-global.php';
+
 // We only need you in the admin
 if ( is_admin() ) {
-	require_once plugin_dir_path( __FILE__ ) . 'inc/wpcampus-admin.php';
+	require_once $plugin_dir . 'inc/wpcampus-admin.php';
 }
 
 class WPCampus_Plugin {
@@ -59,6 +63,8 @@ class WPCampus_Plugin {
 
 		// Modify custom post type arguments from other plugins.
 		add_filter( 'register_post_type_args', array( $this, 'modify_post_type_args' ), 10, 2 );
+
+		add_shortcode( 'wpc_donor_wall', array( $this, 'wpc_donor_wall_shortcode' ) );
 
 		// Add our "show if URL parameter is defined" shortcode.
 		add_shortcode( 'show_if_url_param', array( $this, 'show_if_url_param_shortcode' ) );
@@ -105,6 +111,27 @@ class WPCampus_Plugin {
 		load_plugin_textdomain( 'wpcampus', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 	}
 
+	public function get_audit_donors_wall() {
+		return file_get_contents( plugin_dir_path( __FILE__ ) . 'inc/audit_donors.html' );
+	}
+
+	public function wpc_donor_wall_shortcode( $atts ) {
+
+		$atts = shortcode_atts( array(
+			'campaign'        => 'gutenberg_a11y_audit',
+			'donors_per_page' => -1, // @TODO not setup
+			'show_avatar'     => false, // @TODO not setup
+		), $atts, 'wpc_donor_wall' );
+
+		switch ( $atts['campaign'] ) {
+
+			case 'gutenberg_a11y_audit':
+				return $this->get_audit_donors_wall();
+		}
+
+		return '';
+	}
+
 	/**
 	 * Takes the address and returns
 	 * location lat and long from Google.
@@ -144,7 +171,7 @@ class WPCampus_Plugin {
 		$query = 'https://maps.googleapis.com/maps/api/geocode/json?address=' . urlencode( $address ) . '&key=' . $maps_api_key;
 
 		// If data is returned...
-		if ( ( $response = wp_remote_get( $query ) )
+		if ( ( $response = wp_safe_remote_get( $query ) )
 			&& ( $data = wp_remote_retrieve_body( $response ) ) ) {
 
 			// Decode the data
