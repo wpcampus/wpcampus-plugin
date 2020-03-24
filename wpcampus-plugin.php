@@ -24,7 +24,7 @@ require_once $plugin_dir . 'inc/class-wpcampus-main-global.php';
 
 // We only need you in the admin
 if ( is_admin() ) {
-	require_once $plugin_dir . 'inc/wpcampus-admin.php';
+	require_once $plugin_dir . 'inc/class-wpcampus-admin.php';
 }
 
 class WPCampus_Plugin {
