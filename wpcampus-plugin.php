@@ -19,6 +19,7 @@ if ( ! defined( 'WPINC' ) ) {
 
 $plugin_dir = plugin_dir_path( __FILE__ );
 
+require_once $plugin_dir . 'inc/wpcampus-fields.php';
 require_once $plugin_dir . 'inc/class-wpcampus-main-global.php';
 
 // We only need you in the admin
