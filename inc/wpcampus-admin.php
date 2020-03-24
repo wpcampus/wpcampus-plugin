@@ -39,9 +39,6 @@ class WPCampus_Admin {
 		add_filter( 'manage_users_columns', array( $this, 'add_user_columns' ) );
 		add_filter( 'manage_users_custom_column', array( $this, 'populate_user_columns' ), 10, 3 );
 
-		// Adds custom user contact methods.
-		add_filter( 'user_contactmethods', array( $this, 'add_user_contact_methods' ), 1, 2 );
-
 		// Prints our user meta.
 		add_action( 'show_user_profile', array( $this, 'print_user_meta' ), 1 );
 		add_action( 'edit_user_profile', array( $this, 'print_user_meta' ), 1 );
@@ -151,25 +148,6 @@ class WPCampus_Admin {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * Adds custom user contact methods.
-	 *
-	 * @param   array - $methods - Array of contact methods and their labels
-	 * @param   WP_User - $user - WP_User object
-	 * @return  array - filtered methods
-	 */
-	public function add_user_contact_methods( $methods, $user ) {
-
-		// Add Slack username.
-		$methods['slack_username'] = sprintf( __( '%1$s %2$s Username', 'wpcampus' ), 'WPCampus', 'Slack' );
-
-		// Add company and position.
-		$methods['company'] = __( 'Company', 'wpcampus' );
-		$methods['company_position'] = __( 'Company Position', 'wpcampus' );
-
-		return $methods;
 	}
 
 	/**
