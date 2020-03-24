@@ -35,6 +35,9 @@ final class WPCampus_Main_Global {
 		// Register our post types.
 		add_action( 'init', [ $plugin, 'register_cpts_taxonomies' ] );
 
+		// Modify REST API response for users.
+		add_filter( 'rest_prepare_user', [ $plugin, 'filter_user_response' ], 10, 3 );
+
 	}
 
 	/**
@@ -106,6 +109,42 @@ final class WPCampus_Main_Global {
 
 		$this->register_opportunities_cpt();
 
+	}
+
+	/**
+	 * Add user meta to the user API response.
+	 *
+	 * @param $response - WP_REST_Response - The response object.
+	 * @param $user     - object - User object used to create response.
+	 * @param $request  - WP_REST_Request - Request object.
+	 *
+	 * @return mixed
+	 */
+	public function filter_user_response( $response, $user, $request ) {
+
+		$data = &$response->data;
+
+		$company = get_the_author_meta( 'company', $data['id'] );
+		if ( empty( $company ) ) {
+			$company = "";
+		}
+
+		$data['company'] = $company;
+
+		$company_position = get_the_author_meta( 'company_position', $data['id'] );
+		if ( empty( $company_position ) ) {
+			$company_position = "";
+		}
+
+		$data['company_position'] = $company_position;
+
+		$twitter = get_the_author_meta( 'twitter', $data['id'] );
+		if ( empty( $twitter ) ) {
+			$twitter = '';
+		}
+		$data['twitter'] = $twitter;
+
+		return $response;
 	}
 
 	/**
