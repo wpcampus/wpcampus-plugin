@@ -24,8 +24,8 @@ final class WPCampus_Main_Global {
 		$plugin = new self();
 
 		// Runs on activation and deactivation.
-		register_activation_hook( __FILE__, array( $plugin, 'activate' ) );
-		register_deactivation_hook( __FILE__, array( $plugin, 'deactivate' ) );
+		register_activation_hook( __FILE__, [ $plugin, 'activate' ] );
+		register_deactivation_hook( __FILE__, [ $plugin, 'deactivate' ] );
 
 		// Modify the main feeds query.
 		add_action( 'pre_get_posts', [ $plugin, 'modify_main_feeds_wp_query' ] );
@@ -156,7 +156,7 @@ final class WPCampus_Main_Global {
 	private function register_opportunities_cpt() {
 
 		// Define the opportunity post type labels.
-		$opportunity_labels = array(
+		$opportunity_labels = [
 			'name'                  => _x( 'Opportunities', 'Post Type General Name', 'wpc-docs' ),
 			'singular_name'         => _x( 'Opportunity', 'Post Type Singular Name', 'wpc-docs' ),
 			'menu_name'             => __( 'Opportunities', 'wpc-docs' ),
@@ -176,33 +176,33 @@ final class WPCampus_Main_Global {
 			'items_list'            => __( 'Opportunities list', 'wpc-docs' ),
 			'items_list_navigation' => __( 'Opportunities list navigation', 'wpc-docs' ),
 			'filter_items_list'     => __( 'Filter opportunities list', 'wpc-docs' ),
-		);
+		];
 
 		// Define the opportunity post type arguments.
-		$opportunity_args = array(
-			'label'                 => __( 'Opportunities', 'wpc-docs' ),
-			'labels'                => $opportunity_labels,
-			'supports'              => array( 'title', 'editor', 'author', 'revisions' ),
-			'hierarchical'          => false,
-			'public'                => true,
-			'show_ui'               => true,
-			'show_in_menu'          => true,
-			'menu_icon'             => 'dashicons-groups',
-			'show_in_admin_bar'     => true,
-			'show_in_nav_menus'     => true,
-			'can_export'            => true,
-			'has_archive'           => true,
-			'exclude_from_search'   => false,
-			'publicly_queryable'    => true,
-			'capability_type'       => 'opportunity',
-			'map_meta_cap'          => true,
-			'show_in_rest'          => true,
-			'rest_base'             => 'opportunities',
-			'rewrite'               => array(
-				'slug'              => 'get-involved/opportunities',
-				'feeds'             => true,
-			),
-		);
+		$opportunity_args = [
+			'label'               => __( 'Opportunities', 'wpc-docs' ),
+			'labels'              => $opportunity_labels,
+			'supports'            => [ 'title', 'editor', 'author', 'revisions' ],
+			'hierarchical'        => false,
+			'public'              => true,
+			'show_ui'             => true,
+			'show_in_menu'        => true,
+			'menu_icon'           => 'dashicons-groups',
+			'show_in_admin_bar'   => true,
+			'show_in_nav_menus'   => true,
+			'can_export'          => true,
+			'has_archive'         => true,
+			'exclude_from_search' => false,
+			'publicly_queryable'  => true,
+			'capability_type'     => 'opportunity',
+			'map_meta_cap'        => true,
+			'show_in_rest'        => true,
+			'rest_base'           => 'opportunities',
+			'rewrite'             => [
+				'slug'  => 'get-involved/opportunities',
+				'feeds' => true,
+			],
+		];
 
 		// Register the opportunity post type.
 		register_post_type( 'opportunity', $opportunity_args );
