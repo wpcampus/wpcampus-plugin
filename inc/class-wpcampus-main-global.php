@@ -35,6 +35,8 @@ final class WPCampus_Main_Global {
 		// Register our post types.
 		add_action( 'init', [ $plugin, 'register_cpts_taxonomies' ] );
 
+		add_filter( 'ssp_register_post_type_args', [ $plugin, 'filter_podcast_post_type_args' ] );
+
 		// Add custom REST routes.
 		add_action( 'rest_api_init', [ $plugin, 'register_rest_routes' ] );
 
@@ -100,6 +102,27 @@ final class WPCampus_Main_Global {
 			$query->set( 'post_type', $post_types );
 
 		}
+	}
+
+	/**
+	 * Filter podcast args to remove blog front from rewrite rule.
+	 *
+	 * @param $args
+	 *
+	 * @return mixed
+	 */
+	public function filter_podcast_post_type_args( $args ) {
+
+		// Make sure podcast doesnt include blog front.
+		if ( empty( $args['rewrite'] ) ) {
+			$args['rewrite'] = [
+				'with_front' => false,
+			];
+		} else {
+			$args['rewrite']['with_front'] = false;
+		}
+
+		return $args;
 	}
 
 	/**
