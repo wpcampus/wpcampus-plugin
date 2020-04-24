@@ -35,8 +35,8 @@ final class WPCampus_Main_Global {
 		// Register our post types.
 		add_action( 'init', [ $plugin, 'register_cpts_taxonomies' ] );
 
-		// Modify REST API response for users.
-		add_filter( 'rest_prepare_user', [ $plugin, 'filter_user_response' ], 10, 3 );
+		// Add custom REST routes.
+		add_action( 'rest_api_init', [ $plugin, 'register_rest_routes' ] );
 
 	}
 
@@ -112,42 +112,6 @@ final class WPCampus_Main_Global {
 	}
 
 	/**
-	 * Add user meta to the user API response.
-	 *
-	 * @param $response - WP_REST_Response - The response object.
-	 * @param $user     - object - User object used to create response.
-	 * @param $request  - WP_REST_Request - Request object.
-	 *
-	 * @return mixed
-	 */
-	public function filter_user_response( $response, $user, $request ) {
-
-		$data = &$response->data;
-
-		$company = get_the_author_meta( 'company', $data['id'] );
-		if ( empty( $company ) ) {
-			$company = "";
-		}
-
-		$data['company'] = $company;
-
-		$company_position = get_the_author_meta( 'company_position', $data['id'] );
-		if ( empty( $company_position ) ) {
-			$company_position = "";
-		}
-
-		$data['company_position'] = $company_position;
-
-		$twitter = get_the_author_meta( 'twitter', $data['id'] );
-		if ( empty( $twitter ) ) {
-			$twitter = '';
-		}
-		$data['twitter'] = $twitter;
-
-		return $response;
-	}
-
-	/**
 	 * Register the opportunity custom post type.
 	 *
 	 * @access  private
@@ -207,6 +171,96 @@ final class WPCampus_Main_Global {
 		// Register the opportunity post type.
 		register_post_type( 'opportunity', $opportunity_args );
 
+	}
+
+	/**
+	 * Register our custom REST routes.
+	 */
+	public function register_rest_routes() {
+
+		register_rest_route(
+			'wpcampus',
+			'/contributors/',
+			[
+				'methods'  => 'GET',
+				'callback' => [ $this, 'get_contributors' ],
+			]
+		);
+	}
+
+	/**
+	 * Prepare REST response for /wpcampus/contributors/ endpoint.
+	 *
+	 * @TODO add pagination?
+	 *
+	 * @return WP_REST_Response
+	 */
+	public function get_contributors() {
+		global $wpdb;
+
+		$query = "SELECT users.ID, 
+			users.user_nicename AS path,
+			users.user_email AS email, 
+			users.user_url AS website,
+			users.display_name,
+			twitter.meta_value AS twitter, 
+			company.meta_value AS company, 
+			position.meta_value AS company_position, 
+			bio.meta_value AS bio 
+			FROM (
+				SELECT DISTINCT meta.meta_value AS ID
+				FROM {$wpdb->postmeta} meta
+				INNER JOIN {$wpdb->posts} posts ON posts.ID = meta.post_id AND posts.post_status = 'publish' AND ( posts.post_type = 'post' OR posts.post_type = 'tpodcast' )
+				WHERE meta.meta_key = 'my_multi_author_authors'
+				UNION
+				SELECT DISTINCT posts.post_author AS ID
+				FROM {$wpdb->posts} posts
+				WHERE posts.post_status = 'publish' AND ( posts.post_type = 'post' OR posts.post_type = 'podcast' )
+				UNION
+				SELECT DISTINCT CAST(usermeta.meta_value AS UNSIGNED) AS userID
+				FROM {$wpdb->postmeta} usermeta
+				INNER JOIN {$wpdb->posts} profile ON profile.ID = usermeta.post_id AND profile.post_type = 'profile' AND profile.post_status = 'publish'
+				INNER JOIN {$wpdb->postmeta} speaker ON speaker.meta_value = profile.ID AND speaker.meta_key LIKE 'speakers\_%\_speaker'
+				INNER JOIN {$wpdb->posts} proposal ON proposal.ID = speaker.post_id AND proposal.post_status = 'publish' AND proposal.post_type = 'proposal'
+				INNER JOIN {$wpdb->postmeta} pstatus ON pstatus.post_id = proposal.ID AND pstatus.meta_key = 'proposal_status' AND pstatus.meta_value = 'confirmed'
+				INNER JOIN {$wpdb->postmeta} pevent ON pstatus.post_id = proposal.ID AND pevent.meta_key = 'proposal_event' AND ( pevent.meta_value = '100' OR pevent.meta_value = '101' OR pevent.meta_value = '102' OR pevent.meta_value = '216' OR pevent.meta_value = '103' OR pevent.meta_value = '104' OR pevent.meta_value = '194' )
+				WHERE usermeta.meta_key = 'wordpress_user' and usermeta.meta_value != ''
+			) 
+			AS users_ids
+			LEFT JOIN {$wpdb->users} users ON users_ids.ID = users.ID
+			LEFT JOIN {$wpdb->usermeta} twitter ON twitter.user_id = users_ids.ID AND twitter.meta_key = 'twitter'
+			LEFT JOIN {$wpdb->usermeta} company ON company.user_id = users_ids.ID AND company.meta_key = 'company'
+			LEFT JOIN {$wpdb->usermeta} position ON position.user_id = users_ids.ID AND position.meta_key = 'company_position'
+			LEFT JOIN {$wpdb->usermeta} bio ON bio.user_id = users_ids.ID AND bio.meta_key = 'description'
+			WHERE users.spam = 0 AND users.deleted = 0 AND users.user_status = 0
+			ORDER BY users.display_name ASC";
+
+		$results = $wpdb->get_results( $query );
+
+		if ( empty( $results ) ) {
+			return [];
+		}
+
+		$users = [];
+
+		// @TODO add avatar?
+		foreach ( $results as &$user ) {
+
+			$user->ID = (int) $user->ID;
+
+			if ( ! empty( $user->twitter ) ) {
+				$user->twitter = preg_replace( '/[^a-z0-9\_]/i', '', $user->twitter );
+			}
+
+			if ( ! empty( $user->bio ) ) {
+				$user->bio = strip_tags( $user->bio );
+			}
+
+			$users[] = $user;
+
+		}
+
+		return new WP_REST_Response( $users );
 	}
 }
 
